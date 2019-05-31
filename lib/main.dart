@@ -3,9 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show debugDefaultTargetPlatformOverride;
 
 import 'package:flutter/material.dart';
-import 'go_game.dart';
-import 'model.dart';
-import 'board_widget.dart';
+import 'chess_game.dart';
 
 
 void main() {
@@ -23,10 +21,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Chess For James',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.grey,
       ),
+      debugShowCheckedModeBanner: false,
       home: MyHomePage(),
     );
   }
@@ -39,15 +38,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  Board board = GoBoard(9);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         color: Colors.grey,
         child: Center(
-          child: GoGame(),
+          child: ChessGame(),
         ),
       ),
     );
