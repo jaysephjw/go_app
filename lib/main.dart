@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show debugDefaultTargetPlatformOverride;
 
 import 'package:flutter/material.dart';
+import 'go_game.dart';
 import 'model.dart';
 import 'board_widget.dart';
 
@@ -51,44 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-}
-
-class GoGame extends StatefulWidget {
-  @override
-  _GoGameState createState() => _GoGameState();
-}
-
-class _GoGameState extends State<GoGame> {
-
-  Board board;
-  StoneColor currentTurn;
-
-  @override
-  void initState() {
-    super.initState();
-    board = GoBoard(9);
-    currentTurn = StoneColor.Black;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20),
-      child: AspectRatio(
-          aspectRatio: 1,
-          child: BoardWidget(board: board, onTap: _onTap,)
-      ),
-    );
-  }
-
-  void _onTap(Point clicked) {
-    debugPrint('Play at $clicked');
-    bool success = board.play(clicked, currentTurn);
-    if (success) {
-      currentTurn = (currentTurn == StoneColor.Black) ? StoneColor.White : StoneColor.Black;
-    }
-  }
-
 }
 
 

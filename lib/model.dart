@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 enum StoneColor {
   White, Black
 }
@@ -13,6 +15,14 @@ class Point {
   @override
   String toString() {
     return 'Point($x,$y,$color)';
+  }
+
+  Point kill() {
+    return Point(x, y, null);
+  }
+
+  Point as(StoneColor color) {
+    return Point(x, y, color);
   }
 }
 
@@ -42,6 +52,12 @@ abstract class Board {
   /// TODO: For now, this assumes the play is legal.
   /// Consider passing back a result here instead.
   bool play(Point point, StoneColor color);
+
+
+  /// Helper to set the given point onto the board, using its x,y coordinate.
+  ///
+  /// Private, as this does not check any conditions.
+  void _set(Point point);
 
   /// Calculate the score for a given color.
   ///
@@ -81,16 +97,62 @@ class GoBoard extends Board {
 
   @override
   bool play(Point point, StoneColor color) {
-    assert(point.color == null, 'ILLEGAL MOVE : Cant play at an occupied point');
 
+    // Create new point.
+    final Point newPoint = Point(point.x, point.y, color);
 
-    // TODO: Check for kills
-    // TODO: Check against suicide
+    // Special case :: no color.  Allow this to implement an 'eraser' tool.
+    // This can cause no kills and is always legal.
+    if (newPoint.color == null) {
+      _set(newPoint);
+      return true;
+    }
+
+    // Can't play at an occupied space.
+    if (point.color != null) {
+      print('ILLEGAL MOVE : Cant play at an occupied point');
+      return false;
+    }
+
+    // Check for kills.
+    // -- Get neighboring, opposing groups.
+    final List<Set<Point>> neighborEnemyGroups = _neighbors(newPoint)
+        .where((p) => p.color != null && p.color == flip(newPoint.color))
+        .map((p) => _getGroup(p))
+        .toList();
+
+//    print('Got ${neighborEnemyGroups.length} enemy neighbors');
+
+    // -- Check their liberty. Kill any in atari (the new stone will remove this last liberty)
+    bool killedAny = false;
+    neighborEnemyGroups.forEach((group) {
+      int liberty = _calcLiberty(group);
+//      print('Neighbor has $liberty liberty');
+      if (liberty == 1) {
+        print('Killing group $group');
+        group.forEach((p) => _set(p.kill()));
+        killedAny = true;
+      }
+    });
+
+    // Check against suicide.
+    if (!killedAny && _calcLiberty(_getGroup(newPoint)) == 0) {
+      print('ILLEGAL MOVE : Suicide is forbidden.');
+      return false;
+    }
+
     // Add the stone
-    _points[(point.y * _size) + point.x] = Point(point.x, point.y, color);
+    _set(newPoint);
 
-    // TODO: Update groups
+    // Print neighbors
+    print('New point in group size ${_getGroup(newPoint).length}');
+
     return true;
+  }
+
+  @override
+  void _set(Point newPoint) {
+    _points[(newPoint.y * _size) + newPoint.x] = newPoint;
   }
 
   List<Point> _neighbors(Point p) {
@@ -101,4 +163,39 @@ class GoBoard extends Board {
       if (p.x != _size - 1) pointAt(p.x + 1, p.y), // Right
     ];
   }
+
+  Set<Point> _getGroup(Point p) {
+    assert(p.color != null, 'Cannot get groups for an empty point');
+
+    Set<Point> stones = {p}; // One-stone group
+    Set<Point> seen = {};
+    Queue<Point> neighbors = Queue();
+    neighbors.addAll(_neighbors(p));
+
+    while(neighbors.isNotEmpty) {
+      Point neighbor = neighbors.removeFirst();
+
+      if (seen.contains(neighbor)) continue;
+      seen.add(neighbor);
+
+      if (neighbor.color == p.color) {
+        stones.add(neighbor);
+        neighbors.addAll(_neighbors(neighbor));
+      }
+    }
+    return stones;
+  }
+
+  /// Count up the liberty for a given group.
+  ///
+  /// Each unique empty neighbor of any stone in the group counts as a liberty.
+  _calcLiberty(Set<Point> group) =>
+        group.expand((p) => _neighbors(p))            // get all neighbors
+        .toSet()                                      // filter out duplicate ones
+        .where((neighbor) => neighbor.color == null)  // count only empty ones
+        .length;                                      // get the length.
+}
+
+StoneColor flip(StoneColor color) {
+  return color == StoneColor.Black ? StoneColor.White : StoneColor.Black;
 }

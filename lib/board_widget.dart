@@ -79,7 +79,6 @@ class _InnerBoardWidgetState extends State<_InnerBoardWidget> {
   {
     final localPosition = _localPosition(details.globalPosition);
     final nearest = pointForOffset(widget.board, _context.size, localPosition);
-    debugPrint('onTapUp at $nearest');
 
     if (widget.onTap != null) {
       widget.onTap(nearest);
