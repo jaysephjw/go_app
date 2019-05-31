@@ -57,6 +57,11 @@ class _ChessGameState extends State<ChessGame> {
 
   @override
   Widget build(BuildContext context) {
+
+    final Size size = MediaQuery.of(context).size;
+
+    final double boardSize = size.shortestSide - 41;
+
     return GestureDetector(
       onTap: _next,
       child: Column(
@@ -64,8 +69,9 @@ class _ChessGameState extends State<ChessGame> {
         children: <Widget>[
           Container(
             padding: EdgeInsets.all(20),
-            child: AspectRatio(
-                aspectRatio: 1,
+            child: SizedBox(
+                width: boardSize,
+                height: boardSize,
                 child: BoardWidget(highlighted: highlighted)
             ),
           ),
