@@ -15,6 +15,7 @@ class _ChessGameState extends State<ChessGame> {
 
   FocusNode _node = FocusNode();
   Square highlighted;
+  bool printAsBlack = false;
 
   Queue<Square> _queue = Queue();
 
@@ -30,7 +31,9 @@ class _ChessGameState extends State<ChessGame> {
         ..addAll(oneBoard)..addAll(oneBoard)..addAll(oneBoard)..shuffle();
       _queue.addAll(items);
     }
-    return _queue.removeFirst();
+    return _queue.removeFirst()
+      ..reveal = false
+      ..printAsBlack = printAsBlack;
   }
 
   @override
@@ -60,7 +63,7 @@ class _ChessGameState extends State<ChessGame> {
 
     final Size size = MediaQuery.of(context).size;
 
-    final double boardSize = size.shortestSide - 41;
+    final double boardSize = size.shortestSide - 89;
 
     return GestureDetector(
       onTap: _next,
@@ -75,7 +78,9 @@ class _ChessGameState extends State<ChessGame> {
                 child: BoardWidget(highlighted: highlighted)
             ),
           ),
-          // Invisible tiny text input as a hACKy way to listen to the keyboard
+	  FlatButton(child: _getButtonLabel(), onPressed: _press),
+
+        // Invisible tiny text input as a hACKy way to listen to the keyboard
           SizedBox(
             width: 1,
             height: 1,
@@ -91,4 +96,24 @@ class _ChessGameState extends State<ChessGame> {
       ),
     );
   }
+
+  Widget _getButtonLabel() {
+    final ts = TextSpan(
+        style: TextStyle(color: Colors.black),
+        children: [
+          TextSpan(
+            text: printAsBlack ? 'black ' : 'white ',
+            style: TextStyle(color: printAsBlack ? Colors.black : Colors.white, fontWeight: FontWeight.bold)
+          ),
+          TextSpan(text: 'coordinates. ( -> FLIP TABLE )'),
+    ]);
+    return RichText(text: ts);
+  }
+
+	_press() {
+		setState(() {
+      printAsBlack = !printAsBlack;
+      highlighted?.printAsBlack = printAsBlack;
+		});
+	}
 }
