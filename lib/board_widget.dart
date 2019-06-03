@@ -16,13 +16,19 @@ class BoardWidget extends StatelessWidget {
 
     final double inset = 20; // TODO: Calculate more elegeantly (e.g. 1 cell-size)
 
-    return Material(
-      elevation: 10,
-      child: CustomPaint(
-        painter: _BackgroundPainter(),
-        child: Padding(
-          padding: EdgeInsets.all(inset),
-          child: _InnerBoardWidget(board: board, onTap: onTap),
+    final double size = MediaQuery.of(context).size.shortestSide - 220;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Material(
+        elevation: 10,
+        child: CustomPaint(
+          painter: _BackgroundPainter(),
+          child: Padding(
+            padding: EdgeInsets.all(inset),
+            child: _InnerBoardWidget(board: board, onTap: onTap),
+          ),
         ),
       ),
     );

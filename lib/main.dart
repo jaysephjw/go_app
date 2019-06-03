@@ -7,6 +7,8 @@ import 'go_game.dart';
 import 'model.dart';
 import 'board_widget.dart';
 
+import 'ogs.dart' as ogs;
+
 
 void main() {
   // Use fuchsia as any desktop platform.
@@ -15,7 +17,15 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
   }
 
+  getGame();
+
   runApp(MyApp());
+}
+
+void getGame() async {
+  await ogs.init();
+  final resp = await ogs.getGame('');
+  debugPrint('got responsez: ${resp.moves.length}');
 }
 
 class MyApp extends StatelessWidget {

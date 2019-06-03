@@ -1,7 +1,11 @@
+import 'dart:async';
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 import 'board_widget.dart';
 import 'model.dart';
+import 'ogs.dart' as ogs;
 
 class GoGame extends StatefulWidget {
   @override
@@ -14,6 +18,8 @@ class _GoGameState extends State<GoGame> {
   _Mode mode = _Mode.ALTERNATE;
 
   StoneColor lastPlayed;
+
+  TextEditingController _textController;
 
   StoneColor get nextColor {
     switch (mode) {
@@ -32,6 +38,12 @@ class _GoGameState extends State<GoGame> {
   void initState() {
     super.initState();
     board = GoBoard(9);
+
+    _textController = TextEditingController()
+      ..value = TextEditingValue(text: '17743523')
+      ..addListener(() {
+
+      });
   }
 
   @override
@@ -41,10 +53,7 @@ class _GoGameState extends State<GoGame> {
       children: <Widget>[
         Container(
           padding: EdgeInsets.all(20),
-          child: AspectRatio(
-              aspectRatio: 1,
-              child: BoardWidget(board: board, onTap: _onTap,)
-          ),
+          child: BoardWidget(board: board, onTap: _onTap,),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -64,6 +73,23 @@ class _GoGameState extends State<GoGame> {
           ],
         ),
         Padding(padding: EdgeInsets.only(top: 20),),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            SizedBox(
+              width: 180,
+              child: TextField(
+                controller: _textController,
+                autofocus: false,
+              ),
+            ),
+            IconButton(icon: CircleAvatar(child: Text('>'),
+                backgroundColor: mode == _Mode.ERASE ? Colors.blue[700] : Colors.blue),
+              onPressed: _rr),
+          ],
+        ),
         FlatButton(child: Text('Reset'), onPressed: () => setState(()=> board = GoBoard(9)),)
       ],
     );
@@ -75,6 +101,34 @@ class _GoGameState extends State<GoGame> {
       lastPlayed = nextColor;
       setState(() {}); // Update state
     }
+  }
+
+  void _rr() async {
+    final ogs.GameRecord resp = await ogs.getGame(_textController.value.text);
+    replayIsBlack = true;
+
+    setState(() {
+      board = GoBoard(resp.width);
+    });
+
+    _replayMoves(Queue()..addAll(resp.moves));
+  }
+
+  bool replayIsBlack = false;
+
+  void _replayMoves(Queue<Point> moves) {
+    debugPrint('_replayMoves with queue size ${moves.length}');
+
+    if (moves.isEmpty) return;
+
+    Timer(Duration(milliseconds: 80), () {
+      // Play the move
+      setState(() {
+        board.play(moves.removeFirst(), replayIsBlack ? StoneColor.Black : StoneColor.White);
+        replayIsBlack = !replayIsBlack;
+      });
+      _replayMoves(moves);
+    });
   }
 }
 
