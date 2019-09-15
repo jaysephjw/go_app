@@ -45,6 +45,7 @@ abstract class Board {
   ///
   /// This updates the board accordingly:
   /// * assert the spot is empty
+  /// * check against Ko
   /// * check opposite color neighboring groups for kills
   /// * check for suicide
   /// * update friendly neighboring groups
@@ -94,6 +95,21 @@ class GoBoard extends Board {
 
     return _points[(y * _size) + x];
   }
+
+//
+//  @override
+//  // TODO: implement hashCode
+//  int get hashCode() {
+//
+//    // TODO https://en.wikipedia.org/wiki/Zobrist_hashing
+//
+//  }
+//
+//  @override
+//  bool operator ==(other) {
+//    // TODO: implement ==
+//    return super.==(other);
+//  }
 
   @override
   bool play(Point point, StoneColor color) {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/gestures/events.dart';
 
 import 'model.dart';
 
@@ -14,7 +13,7 @@ class BoardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final double inset = 20; // TODO: Calculate more elegeantly (e.g. 1 cell-size)
+    final double inset = 20; // TODO: Calculate more elegantly (e.g. 1 cell-size)
 
     final double size = MediaQuery.of(context).size.shortestSide - 220;
 
@@ -171,10 +170,12 @@ class _BoardPainter extends CustomPainter {
     return color == StoneColor.White ? whiteStonePaint : blackStonePaint;
   }
 
+//  @override
+//  bool shouldRepaint(CustomPainter oldDelegate) {
+//    return (oldDelegate as _BoardPainter).board != board;
+//  }
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return (oldDelegate as _BoardPainter).board != board;
-  }
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
 
 Point pointForOffset(Board board, Size boardSize, Offset localPosition) {

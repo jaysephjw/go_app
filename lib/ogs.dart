@@ -16,25 +16,7 @@ Future<GameRecord> getGame(String gameID) async {
   return GameRecord.fromJson(result.data);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class GameRecord {
-
   final int width;
   final List<Point> moves;
   final int white;
@@ -43,9 +25,10 @@ class GameRecord {
   GameRecord(this.width, this.moves, this.white, this.black);
 
   static GameRecord fromJson(dynamic json) {
-
     // Parse moves
-    List<Point> moves = json['gamedata']['moves'].map<Point>((js) => Point(js[0], js[1], null)).toList();
+    List<Point> moves = json['gamedata']['moves']
+        .map<Point>((js) => Point(js[0], js[1], null))
+        .toList();
 
     return GameRecord(
       json['width'],
@@ -61,6 +44,3 @@ class Move {
   int y;
   int time;
 }
-
-
-

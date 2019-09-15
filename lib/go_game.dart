@@ -15,21 +15,22 @@ class GoGame extends StatefulWidget {
 class _GoGameState extends State<GoGame> {
 
   Board board;
-  _Mode mode = _Mode.ALTERNATE;
+  Mode mode = Mode.ALTERNATE;
 
   StoneColor lastPlayed;
 
   TextEditingController _textController;
+  String _gameId;
 
   StoneColor get nextColor {
     switch (mode) {
-      case _Mode.ALTERNATE:
+      case Mode.ALTERNATE:
         return lastPlayed == StoneColor.Black ? StoneColor.White : StoneColor.Black;
-      case _Mode.WHITE:
+      case Mode.WHITE:
         return StoneColor.White;
-      case _Mode.BLACK:
+      case Mode.BLACK:
         return StoneColor.Black;
-      case _Mode.ERASE:
+      case Mode.ERASE:
         return null;
     }
   }
@@ -40,7 +41,7 @@ class _GoGameState extends State<GoGame> {
     board = GoBoard(9);
 
     _textController = TextEditingController()
-      ..value = TextEditingValue(text: '17743523')
+      ..value = TextEditingValue(text: '1000')
       ..addListener(() {
 
       });
@@ -53,25 +54,15 @@ class _GoGameState extends State<GoGame> {
       children: <Widget>[
         Container(
           padding: EdgeInsets.all(20),
-          child: BoardWidget(board: board, onTap: _onTap,),
+          child: BoardWidget(board: board, onTap: _onTapBoard,),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            IconButton(icon: CircleAvatar(child: Text('A'),
-                backgroundColor: mode == _Mode.ALTERNATE ? Colors.blue[700] : Colors.blue),
-              onPressed: () => setState(() => mode = _Mode.ALTERNATE),),
-            IconButton(icon: CircleAvatar(child: Text('B'),
-                backgroundColor: mode == _Mode.BLACK ? Colors.blue[700] : Colors.blue),
-              onPressed: () => setState(() => mode = _Mode.BLACK),),
-            IconButton(icon: CircleAvatar(child: Text('W'),
-                backgroundColor: mode == _Mode.WHITE ? Colors.blue[700] : Colors.blue),
-              onPressed: () => setState(() => mode = _Mode.WHITE),),
-            IconButton(icon: CircleAvatar(child: Text('E'),
-                backgroundColor: mode == _Mode.ERASE ? Colors.blue[700] : Colors.blue),
-              onPressed: () => setState(() => mode = _Mode.ERASE),),
-          ],
-        ),
+        ReplayWidget(gameId: _gameId,),
+        ControlsWidget(mode: mode, modeChanged: (Mode newMode) {
+          setState(() {
+            this.mode = newMode;
+          });
+        },),
+
         Padding(padding: EdgeInsets.only(top: 20),),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -86,8 +77,12 @@ class _GoGameState extends State<GoGame> {
               ),
             ),
             IconButton(icon: CircleAvatar(child: Text('>'),
-                backgroundColor: mode == _Mode.ERASE ? Colors.blue[700] : Colors.blue),
-              onPressed: _rr),
+                backgroundColor: mode == Mode.ERASE ? Colors.blue[700] : Colors.blue),
+              onPressed: () {
+              setState(() {
+                _gameId = _textController.text;
+              });
+              }),
           ],
         ),
         FlatButton(child: Text('Reset'), onPressed: () => setState(()=> board = GoBoard(9)),)
@@ -95,41 +90,105 @@ class _GoGameState extends State<GoGame> {
     );
   }
 
-  void _onTap(Point clicked) {
+  void _onTapBoard(Point clicked) {
     bool success = board.play(clicked, nextColor);
     if (success) {
       lastPlayed = nextColor;
       setState(() {}); // Update state
     }
   }
+}
 
-  void _rr() async {
-    final ogs.GameRecord resp = await ogs.getGame(_textController.value.text);
-    replayIsBlack = true;
+enum Mode { BLACK, WHITE, ALTERNATE, ERASE }
 
-    setState(() {
-      board = GoBoard(resp.width);
-    });
 
-    _replayMoves(Queue()..addAll(resp.moves));
+class ReplayWidget extends StatefulWidget {
+
+  final String gameId;
+
+  const ReplayWidget({Key key, @required this.gameId}) : super(key: key);
+
+  @override
+  _ReplayWidgetState createState() => _ReplayWidgetState();
+}
+
+class _ReplayWidgetState extends State<ReplayWidget> {
+
+  GoBoard board;
+
+  @override
+  void initState() {
+    super.initState();
+    board = GoBoard(19); // Default size
+    start();
   }
 
-  bool replayIsBlack = false;
+  void start() async {
+    final ogs.GameRecord resp = await ogs.getGame(widget.gameId);
 
-  void _replayMoves(Queue<Point> moves) {
-    debugPrint('_replayMoves with queue size ${moves.length}');
+    setState(() {
+      setState(() {
+        board = GoBoard(resp.width);
+      });
+    });
 
-    if (moves.isEmpty) return;
+    Queue<Point> moves = Queue()..addAll(resp.moves);
+    bool isBlack = true;
+    Timer.periodic(Duration(milliseconds: 75), (Timer timer) {
+      if (moves.isEmpty) {
+        timer.cancel();
+        return;
+      }
 
-    Timer(Duration(milliseconds: 80), () {
       // Play the move
       setState(() {
-        board.play(moves.removeFirst(), replayIsBlack ? StoneColor.Black : StoneColor.White);
-        replayIsBlack = !replayIsBlack;
+        board.play(moves.removeFirst(), isBlack ? StoneColor.Black : StoneColor.White);
+        isBlack = !isBlack;
       });
-      _replayMoves(moves);
     });
+  }
+
+  @override
+  void didUpdateWidget(ReplayWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.gameId != widget.gameId) {
+      start();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BoardWidget(board: board);
   }
 }
 
-enum _Mode { BLACK, WHITE, ALTERNATE, ERASE }
+
+class ControlsWidget extends StatelessWidget {
+
+  final Mode mode;
+  final Function(Mode mode) modeChanged;
+
+  const ControlsWidget({Key key, @required this.mode, this.modeChanged}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return        Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        IconButton(icon: CircleAvatar(child: Text('A'),
+            backgroundColor: mode == Mode.ALTERNATE ? Colors.blue[700] : Colors.blue),
+          onPressed: () => modeChanged(Mode.ALTERNATE),),
+        IconButton(icon: CircleAvatar(child: Text('B'),
+            backgroundColor: mode == Mode.BLACK ? Colors.blue[700] : Colors.blue),
+          onPressed: () => modeChanged(Mode.BLACK),),
+        IconButton(icon: CircleAvatar(child: Text('W'),
+            backgroundColor: mode == Mode.WHITE ? Colors.blue[700] : Colors.blue),
+          onPressed: () => modeChanged(Mode.WHITE),),
+        IconButton(icon: CircleAvatar(child: Text('E'),
+            backgroundColor: mode == Mode.ERASE ? Colors.blue[700] : Colors.blue),
+          onPressed: () => modeChanged(Mode.ERASE),),
+      ],
+    );
+  }
+}

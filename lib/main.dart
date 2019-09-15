@@ -5,10 +5,8 @@ import 'package:flutter/foundation.dart' show debugDefaultTargetPlatformOverride
 import 'package:flutter/material.dart';
 import 'go_game.dart';
 import 'model.dart';
-import 'board_widget.dart';
 
 import 'ogs.dart' as ogs;
-
 
 void main() {
   // Use fuchsia as any desktop platform.
