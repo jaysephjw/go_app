@@ -1,11 +1,7 @@
-import 'dart:async';
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 
 import 'board_widget.dart';
 import 'model.dart';
-import 'ogs.dart' as ogs;
 
 class GoGame extends StatefulWidget {
   @override
@@ -18,9 +14,6 @@ class _GoGameState extends State<GoGame> {
   Mode mode = Mode.ALTERNATE;
 
   StoneColor lastPlayed;
-
-  TextEditingController _textController;
-  String _gameId;
 
   StoneColor get nextColor {
     switch (mode) {
@@ -39,12 +32,6 @@ class _GoGameState extends State<GoGame> {
   void initState() {
     super.initState();
     board = GoBoard(9);
-
-    _textController = TextEditingController()
-      ..value = TextEditingValue(text: '1000')
-      ..addListener(() {
-
-      });
   }
 
   @override
@@ -56,35 +43,11 @@ class _GoGameState extends State<GoGame> {
           padding: EdgeInsets.all(20),
           child: BoardWidget(board: board, onTap: _onTapBoard,),
         ),
-        ReplayWidget(gameId: _gameId,),
         ControlsWidget(mode: mode, modeChanged: (Mode newMode) {
           setState(() {
             this.mode = newMode;
           });
         },),
-
-        Padding(padding: EdgeInsets.only(top: 20),),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            SizedBox(
-              width: 180,
-              child: TextField(
-                controller: _textController,
-                autofocus: false,
-              ),
-            ),
-            IconButton(icon: CircleAvatar(child: Text('>'),
-                backgroundColor: mode == Mode.ERASE ? Colors.blue[700] : Colors.blue),
-              onPressed: () {
-              setState(() {
-                _gameId = _textController.text;
-              });
-              }),
-          ],
-        ),
         FlatButton(child: Text('Reset'), onPressed: () => setState(()=> board = GoBoard(9)),)
       ],
     );
@@ -100,69 +63,6 @@ class _GoGameState extends State<GoGame> {
 }
 
 enum Mode { BLACK, WHITE, ALTERNATE, ERASE }
-
-
-class ReplayWidget extends StatefulWidget {
-
-  final String gameId;
-
-  const ReplayWidget({Key key, @required this.gameId}) : super(key: key);
-
-  @override
-  _ReplayWidgetState createState() => _ReplayWidgetState();
-}
-
-class _ReplayWidgetState extends State<ReplayWidget> {
-
-  GoBoard board;
-
-  @override
-  void initState() {
-    super.initState();
-    board = GoBoard(19); // Default size
-    start();
-  }
-
-  void start() async {
-    final ogs.GameRecord resp = await ogs.getGame(widget.gameId);
-
-    setState(() {
-      setState(() {
-        board = GoBoard(resp.width);
-      });
-    });
-
-    Queue<Point> moves = Queue()..addAll(resp.moves);
-    bool isBlack = true;
-    Timer.periodic(Duration(milliseconds: 75), (Timer timer) {
-      if (moves.isEmpty) {
-        timer.cancel();
-        return;
-      }
-
-      // Play the move
-      setState(() {
-        board.play(moves.removeFirst(), isBlack ? StoneColor.Black : StoneColor.White);
-        isBlack = !isBlack;
-      });
-    });
-  }
-
-  @override
-  void didUpdateWidget(ReplayWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.gameId != widget.gameId) {
-      start();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BoardWidget(board: board);
-  }
-}
-
 
 class ControlsWidget extends StatelessWidget {
 

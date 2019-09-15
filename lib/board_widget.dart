@@ -17,9 +17,8 @@ class BoardWidget extends StatelessWidget {
 
     final double size = MediaQuery.of(context).size.shortestSide - 220;
 
-    return SizedBox(
-      width: size,
-      height: size,
+    return AspectRatio(
+      aspectRatio: 1,
       child: Material(
         elevation: 10,
         child: CustomPaint(

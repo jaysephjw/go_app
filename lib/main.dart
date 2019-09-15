@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show debugDefaultTargetPlatformOverride;
 
 import 'package:flutter/material.dart';
+import 'package:go_app/replay_boards.dart';
 import 'go_game.dart';
 import 'model.dart';
 
@@ -55,7 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Container(
         color: Colors.grey,
         child: Center(
-          child: GoGame(),
+//          child: GoGame(),
+        child: ReplayScreen(),
         ),
       ),
     );
