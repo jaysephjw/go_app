@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:goban/goban.dart';
 
-import 'board_widget.dart';
-import 'model.dart';
 import 'ogs.dart' as ogs;
 
+/// A screen for replaying games from OGS.
 class ReplayScreen extends StatefulWidget {
   @override
   _ReplayScreenState createState() => _ReplayScreenState();
@@ -15,7 +15,7 @@ class ReplayScreen extends StatefulWidget {
 class _ReplayScreenState extends State<ReplayScreen> {
 
   TextEditingController _textController;
-  int _gameId;
+  int _gameId = 124567;
 
   @override
   void initState() {
@@ -31,12 +31,7 @@ class _ReplayScreenState extends State<ReplayScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-
-        ReplayWidget(gameId: (_gameId + 0).toString(),),
-        ReplayWidget(gameId: (_gameId + 1).toString(),),
-        ReplayWidget(gameId: (_gameId + 2).toString(),),
-        ReplayWidget(gameId: (_gameId + 3).toString(),),
-
+        ReplayBoard(gameId: (_gameId + 0).toString(),),
         Padding(padding: EdgeInsets.only(top: 20),),
 
         Row(
@@ -53,12 +48,12 @@ class _ReplayScreenState extends State<ReplayScreen> {
               ),
             ),
             IconButton(
-              icon: CircleAvatar(child: Text('>')),
-              onPressed: () {
-              setState(() {
-                _gameId = int.parse(_textController.text)
-              });
-              }),
+                icon: CircleAvatar(child: Text('>')),
+                onPressed: () {
+                  setState(() {
+                    _gameId = int.parse(_textController.text);
+                  });
+                }),
           ],
         ),
       ],
@@ -66,24 +61,25 @@ class _ReplayScreenState extends State<ReplayScreen> {
   }
 }
 
-class ReplayWidget extends StatefulWidget {
+/// A goban that replays an OGS game.
+class ReplayBoard extends StatefulWidget {
 
   final String gameId;
 
-  const ReplayWidget({Key key, @required this.gameId}) : super(key: key);
+  const ReplayBoard({Key key, @required this.gameId}) : super(key: key);
 
   @override
-  _ReplayWidgetState createState() => _ReplayWidgetState();
+  _ReplayBoardState createState() => _ReplayBoardState();
 }
 
-class _ReplayWidgetState extends State<ReplayWidget> {
+class _ReplayBoardState extends State<ReplayBoard> {
 
-  GoBoard board;
+  GobanController board;
 
   @override
   void initState() {
     super.initState();
-    board = GoBoard(19); // Default size
+    board = GobanController(boardSize: 19); // Default size
     start();
   }
 
@@ -92,28 +88,30 @@ class _ReplayWidgetState extends State<ReplayWidget> {
 
     setState(() {
       setState(() {
-        board = GoBoard(resp.width);
+        board = GobanController(boardSize: resp.width);
       });
     });
 
-    Queue<Point> moves = Queue()..addAll(resp.moves);
-    bool isBlack = true;
+    Queue<Move> moves = Queue()..addAll(resp.moves);
+
+    StoneColor nextColor = StoneColor.Black;
+
     Timer.periodic(Duration(milliseconds: 75), (Timer timer) {
       if (moves.isEmpty) {
         timer.cancel();
         return;
       }
-
       // Play the move
       setState(() {
-        board.play(moves.removeFirst(), isBlack ? StoneColor.Black : StoneColor.White);
-        isBlack = !isBlack;
+        final move = moves.removeFirst();
+        board.model.play(move.copy(color: nextColor));
+        nextColor = nextColor.flipped();
       });
     });
   }
 
   @override
-  void didUpdateWidget(ReplayWidget oldWidget) {
+  void didUpdateWidget(ReplayBoard oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.gameId != widget.gameId) {
@@ -124,9 +122,11 @@ class _ReplayWidgetState extends State<ReplayWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 300,
-      height: 300,
-      child: BoardWidget(board: board)
+        width: 300,
+        height: 300,
+        child: Goban(
+          controller: board,
+        )
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import 'model.dart';
+import 'package:goban/goban.dart';
 
 Dio _dio;
 
@@ -18,7 +18,7 @@ Future<GameRecord> getGame(String gameID) async {
 
 class GameRecord {
   final int width;
-  final List<Point> moves;
+  final List<Move> moves;
   final int white;
   final int black;
 
@@ -26,8 +26,8 @@ class GameRecord {
 
   static GameRecord fromJson(dynamic json) {
     // Parse moves
-    List<Point> moves = json['gamedata']['moves']
-        .map<Point>((js) => Point(js[0], js[1], null))
+    List<Move> moves = json['gamedata']['moves']
+        .map<Move>((js) => Move(js[0], js[1], StoneColor.Empty))
         .toList();
 
     return GameRecord(
@@ -37,10 +37,4 @@ class GameRecord {
       json['black'],
     );
   }
-}
-
-class Move {
-  int x;
-  int y;
-  int time;
 }

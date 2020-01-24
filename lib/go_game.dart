@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:goban/goban.dart';
+import 'package:goban/gobanController.dart';
 
-import 'board_widget.dart';
-import 'model.dart';
+import 'controls.dart';
 
 class GoGame extends StatefulWidget {
   @override
@@ -10,85 +11,81 @@ class GoGame extends StatefulWidget {
 
 class _GoGameState extends State<GoGame> {
 
-  Board board;
-  Mode mode = Mode.ALTERNATE;
+  GobanController controller;
+  ControlsMode mode = ControlsMode.ALTERNATE;
 
   StoneColor lastPlayed;
 
   StoneColor get nextColor {
     switch (mode) {
-      case Mode.ALTERNATE:
+      case ControlsMode.ALTERNATE:
         return lastPlayed == StoneColor.Black ? StoneColor.White : StoneColor.Black;
-      case Mode.WHITE:
+      case ControlsMode.WHITE:
         return StoneColor.White;
-      case Mode.BLACK:
+      case ControlsMode.BLACK:
         return StoneColor.Black;
-      case Mode.ERASE:
-        return null;
+      case ControlsMode.ERASE:
+        return StoneColor.Empty;
     }
   }
 
   @override
-  void initState() {
+  initState() {
     super.initState();
-    board = GoBoard(9);
+    controller = GobanController();
+
+    controller.clicks.listen(_onTapBoard);
+    controller.hovers.listen(_onHover);
+  }
+
+  @override
+  dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Container(
-          padding: EdgeInsets.all(20),
-          child: BoardWidget(board: board, onTap: _onTapBoard,),
+        Flexible(
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: Goban(
+              controller: controller,
+            ),
+          ),
         ),
-        ControlsWidget(mode: mode, modeChanged: (Mode newMode) {
+        ControlsWidget(mode: mode, modeChanged: (ControlsMode newMode) {
           setState(() {
             this.mode = newMode;
           });
         },),
-        FlatButton(child: Text('Reset'), onPressed: () => setState(()=> board = GoBoard(9)),)
+        FlatButton(child: Text('Reset'), onPressed: () =>
+          setState((){
+            controller.dispose();
+            controller = GobanController();
+          }
+        ),)
       ],
     );
   }
 
-  void _onTapBoard(Point clicked) {
-    bool success = board.play(clicked, nextColor);
-    if (success) {
-      lastPlayed = nextColor;
-      setState(() {}); // Update state
-    }
+  void _onTapBoard(Move position) {
+    print('_onTapBoard $position');
+    setState(() {
+      // TODO: Branch on mode!
+      bool success = controller.model.play(position.copy(color: nextColor));
+      if (success) lastPlayed = nextColor;
+    });
   }
-}
 
-enum Mode { BLACK, WHITE, ALTERNATE, ERASE }
-
-class ControlsWidget extends StatelessWidget {
-
-  final Mode mode;
-  final Function(Mode mode) modeChanged;
-
-  const ControlsWidget({Key key, @required this.mode, this.modeChanged}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return        Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        IconButton(icon: CircleAvatar(child: Text('A'),
-            backgroundColor: mode == Mode.ALTERNATE ? Colors.blue[700] : Colors.blue),
-          onPressed: () => modeChanged(Mode.ALTERNATE),),
-        IconButton(icon: CircleAvatar(child: Text('B'),
-            backgroundColor: mode == Mode.BLACK ? Colors.blue[700] : Colors.blue),
-          onPressed: () => modeChanged(Mode.BLACK),),
-        IconButton(icon: CircleAvatar(child: Text('W'),
-            backgroundColor: mode == Mode.WHITE ? Colors.blue[700] : Colors.blue),
-          onPressed: () => modeChanged(Mode.WHITE),),
-        IconButton(icon: CircleAvatar(child: Text('E'),
-            backgroundColor: mode == Mode.ERASE ? Colors.blue[700] : Colors.blue),
-          onPressed: () => modeChanged(Mode.ERASE),),
-      ],
-    );
+  void _onHover(Move position) {
+    print('onHover $position');
+    setState(() {
+      controller.model.ghost = position;
+    });
   }
 }

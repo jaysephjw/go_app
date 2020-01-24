@@ -11,6 +11,13 @@ dependencies:
     sdk: flutter
   dio: any
 
+  sgf_parser:
+    path: ../libs/SGFParser
+
+  goban:
+    path: ../libs/Goban
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
