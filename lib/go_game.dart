@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:goban/goban.dart';
-import 'package:goban/gobanController.dart';
 
 import 'controls.dart';
 
@@ -32,16 +31,19 @@ class _GoGameState extends State<GoGame> {
   @override
   initState() {
     super.initState();
-    controller = GobanController();
-
-    controller.clicks.listen(_onTapBoard);
-    controller.hovers.listen(_onHover);
+    initController();
   }
 
   @override
   dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  initController() {
+    controller = GobanController(boardSize: 11);
+    controller.clicks.listen(_onTapBoard);
+    controller.hovers.listen(_onHover);
   }
 
   @override
@@ -53,9 +55,11 @@ class _GoGameState extends State<GoGame> {
         Flexible(
           child: Container(
             padding: EdgeInsets.all(20),
-            child: Goban(
-              controller: controller,
-            ),
+//            child: Goban(
+//              controller: controller,
+//            ),
+              child: BoardWidget(
+                  controller: controller),
           ),
         ),
         ControlsWidget(mode: mode, modeChanged: (ControlsMode newMode) {
@@ -66,7 +70,7 @@ class _GoGameState extends State<GoGame> {
         FlatButton(child: Text('Reset'), onPressed: () =>
           setState((){
             controller.dispose();
-            controller = GobanController();
+            initController();
           }
         ),)
       ],
