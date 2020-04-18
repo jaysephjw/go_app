@@ -1,13 +1,20 @@
 // Desktop support
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:goban/themes/gobanTheme.dart';
 import 'go_game.dart';
 
-void main() {
+void main() async {
   runApp(MyApp());
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft
+    ]);
+    SystemChrome.setEnabledSystemUIOverlays([]);
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -33,6 +40,14 @@ class HikaruPage extends StatefulWidget {
 class _HikaruPageState extends State<HikaruPage> {
 
   @override
+  void initState() {
+//    SystemChrome.setPreferredOrientations([
+//      DeviceOrientation.landscapeRight,
+//      DeviceOrientation.landscapeLeft
+//    ]).then((value) => setState((){}));
+  }
+
+  @override
   Widget build(BuildContext context) {
 
     final height = MediaQuery.of(context).size.height;
@@ -40,29 +55,27 @@ class _HikaruPageState extends State<HikaruPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: AspectRatio(
-          aspectRatio: 4/3,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [Color(0xFF9399CD), Color(0xFFBDBCD3),Color(0xFFCBC8E0),Color(0xFFBDBCD3)],
-                stops: [.2,.40,.5,.6],
-              )
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Spacer(),
-                GoGame(
-                  gobanTheme: _hikaruGobanTheme,
-                  showControls: false,
-                  padding: EdgeInsets.symmetric(vertical: height / 10),
-                ),
-                Spacer(),
-              ],
-            ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xFF9399CD), Color(0xFFBDBCD3),Color(0xFFCBC8E0),Color(0xFFBDBCD3)],
+              stops: [.2,.40,.5,.6],
+            )
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Spacer(),
+              GoGame(
+                gobanTheme: _hikaruGobanTheme,
+                showControls: false,
+                padding: EdgeInsets.symmetric(vertical: height / 25),
+              ),
+              Spacer(),
+            ],
           ),
         ),
       ),
