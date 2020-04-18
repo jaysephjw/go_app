@@ -1,5 +1,6 @@
 // Desktop support
 import 'package:flutter/material.dart';
+import 'package:goban/themes/gobanTheme.dart';
 import 'go_game.dart';
 
 void main() {
@@ -51,3 +52,23 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 
+
+class HikaruPage extends StatefulWidget {
+  @override
+  _HikaruPageState createState() => _HikaruPageState();
+}
+
+class _HikaruPageState extends State<MyHomePage> {
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.grey,
+        child: Center(
+          child: GoGame(),
+        ),
+      ),
+    );
+  }
+}
