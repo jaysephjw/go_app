@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:goban/themes/gobanTheme.dart';
 import 'go_game.dart';
 
@@ -69,10 +70,31 @@ class _HikaruPageState extends State<HikaruPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Spacer(),
+              Container(
+                child: Column(
+                  children: <Widget>[
+                    Padding(padding: const EdgeInsets.only(top: 30.0)),
+                    SvgPicture.asset('assets/black_bowl.svg', width: 150,),
+                    SvgPicture.asset('assets/black_lid.svg', width: 130,),
+                  ],
+                ),
+              ),
+              Spacer(),
               GoGame(
                 gobanTheme: _hikaruGobanTheme,
                 showControls: false,
                 padding: EdgeInsets.symmetric(vertical: height / 25),
+              ),
+              Spacer(),
+              Container(
+                child: Column(
+                  verticalDirection: VerticalDirection.up,
+                  children: <Widget>[
+                    Padding(padding: const EdgeInsets.only(top: 30.0)),
+                    SvgPicture.asset('assets/white_lid.svg', width: 130,),
+                    SvgPicture.asset('assets/white_bowl.svg', width: 150,),
+                  ],
+                ),
               ),
               Spacer(),
             ],

@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   dio: any
+  flutter_svg: any
 
   sgf_parser:
     path: ../libs/SGFParser
@@ -25,3 +26,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/
