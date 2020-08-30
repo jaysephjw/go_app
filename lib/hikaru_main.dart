@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:goban/goban.dart';
 import 'package:goban/themes/gobanTheme.dart';
 import 'go_game.dart';
 
@@ -40,14 +41,15 @@ class HikaruPage extends StatefulWidget {
 
 class _HikaruPageState extends State<HikaruPage> {
 
+  BoardController controller;
+
   @override
   void initState() {
-//    SystemChrome.setPreferredOrientations([
-//      DeviceOrientation.landscapeRight,
-//      DeviceOrientation.landscapeLeft
-//    ]).then((value) => setState((){}));
+    controller = BoardController(
+      boardSize: 19,
+      theme: _hikaruGobanTheme
+    );
   }
-
   @override
   Widget build(BuildContext context) {
 
@@ -74,16 +76,15 @@ class _HikaruPageState extends State<HikaruPage> {
                 child: Column(
                   children: <Widget>[
                     Padding(padding: const EdgeInsets.only(top: 30.0)),
-                    SvgPicture.asset('assets/black_bowl.svg', width: 150,),
-                    SvgPicture.asset('assets/black_lid.svg', width: 130,),
+                    SvgPicture.asset('assets/black_bowl.svg', width: bowlSize,),
+                    SvgPicture.asset('assets/black_lid.svg', width: lidSize,),
                   ],
                 ),
               ),
               Spacer(),
-              GoGame(
-                gobanTheme: _hikaruGobanTheme,
-                showControls: false,
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: height / 25),
+                child: GoGame(controller: controller),
               ),
               Spacer(),
               Container(
@@ -91,8 +92,8 @@ class _HikaruPageState extends State<HikaruPage> {
                   verticalDirection: VerticalDirection.up,
                   children: <Widget>[
                     Padding(padding: const EdgeInsets.only(top: 30.0)),
-                    SvgPicture.asset('assets/white_lid.svg', width: 130,),
-                    SvgPicture.asset('assets/white_bowl.svg', width: 150,),
+                    SvgPicture.asset('assets/white_lid.svg', width: lidSize,),
+                    SvgPicture.asset('assets/white_bowl.svg', width: bowlSize,),
                   ],
                 ),
               ),
@@ -105,7 +106,10 @@ class _HikaruPageState extends State<HikaruPage> {
   }
 }
 
-final _hikaruGobanTheme = GobanTheme(
+const bowlSize = 125.0;
+const lidSize = bowlSize * .9;
+
+const _hikaruGobanTheme = GobanTheme(
     lineWidth: 0.7,
     boardGradient: const LinearGradient(
         colors: [Color(0xFFD2BC87), Color(0xFFC3AF8E), Color(0xFFC3AF8E), Color(0xFFEDDCA2)],
@@ -117,7 +121,9 @@ final _hikaruGobanTheme = GobanTheme(
       spreadRadius: -2,
       offset: const Offset(-10, 1)),
     whiteStones: StoneTheme(
-        stoneColor: Color(0xFFDFE6F2),
+        stoneColor: Color(0xFF888888),
+//        borderColor: Colors.black,
+        glint: true,
         // TODO: Border thickness is too high.
         // TODO: Stone shadows
     )

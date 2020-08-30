@@ -4,19 +4,14 @@ import 'package:goban/themes/gobanTheme.dart';
 
 import 'controls.dart';
 
+/// A Goban that knows the rules of go.
 class GoGame extends StatefulWidget {
 
-  final int boardSize;
-  final GobanTheme gobanTheme;
-  final bool showControls;
-  final EdgeInsets padding;
+  final BoardController controller;
 
   const GoGame({
     Key key,
-    this.boardSize = 19,
-    this.gobanTheme = GobanTheme.defaultTheme,
-    this.showControls = true,
-    this.padding = const EdgeInsets.all(20)
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -24,24 +19,6 @@ class GoGame extends StatefulWidget {
 }
 
 class _GoGameState extends State<GoGame> {
-
-  GobanController controller;
-  ControlsMode mode = ControlsMode.ALTERNATE;
-
-  StoneColor lastPlayed;
-
-  StoneColor get nextColor {
-    switch (mode) {
-      case ControlsMode.ALTERNATE:
-        return lastPlayed == StoneColor.Black ? StoneColor.White : StoneColor.Black;
-      case ControlsMode.WHITE:
-        return StoneColor.White;
-      case ControlsMode.BLACK:
-        return StoneColor.Black;
-      case ControlsMode.ERASE:
-        return StoneColor.Empty;
-    }
-  }
 
   @override
   initState() {
@@ -51,14 +28,13 @@ class _GoGameState extends State<GoGame> {
 
   @override
   dispose() {
-    controller.dispose();
+    widget.controller.dispose();
     super.dispose();
   }
 
   initController() {
-    controller = GobanController(boardSize: widget.boardSize, theme: widget.gobanTheme);
-    controller.clicks.listen(_onTapBoard);
-    controller.hovers.listen(_onHover);
+    widget.controller.clicks.listen(_onTapBoard);
+    widget.controller.hovers.listen(_onHover);
   }
 
   @override
@@ -67,42 +43,25 @@ class _GoGameState extends State<GoGame> {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Flexible(
-          child: Container(
-            padding: widget.padding,
-              child: BoardWidget(controller: controller),
-          ),
-        ),
-        if (widget.showControls)
-        ControlsWidget(mode: mode, modeChanged: (ControlsMode newMode) {
-          setState(() {
-            this.mode = newMode;
-          });
-        },),
-        if (widget.showControls)
-        FlatButton(child: Text('Reset'), onPressed: () =>
-          setState((){
-            controller.dispose();
-            initController();
-          }
-        ),)
+        Flexible(child: GobanWidget(controller: widget.controller)),
       ],
     );
+  }
+
+  bool play(Move move) {
+    bool success = widget.controller.model.play(move);
+    return success;
   }
 
   void _onTapBoard(Move position) {
     print('_onTapBoard $position');
     setState(() {
-      // TODO: Branch on mode!
-      bool success = controller.model.play(position.copy(color: nextColor));
-      if (success) lastPlayed = nextColor;
+      final move = position.copy(color: widget.controller.model.nextColor);
+      bool success = play(move);
     });
   }
 
   void _onHover(Move position) {
-    print('onHover $position');
-    setState(() {
-      controller.model.ghost = position;
-    });
+    setState(() {});
   }
 }

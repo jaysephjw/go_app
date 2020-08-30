@@ -74,12 +74,12 @@ class ReplayBoard extends StatefulWidget {
 
 class _ReplayBoardState extends State<ReplayBoard> {
 
-  GobanController board;
+  BoardController board;
 
   @override
   void initState() {
     super.initState();
-    board = GobanController(boardSize: 9); // Default size
+    board = BoardController(boardSize: 9); // Default size
     start();
   }
 
@@ -88,7 +88,7 @@ class _ReplayBoardState extends State<ReplayBoard> {
 
     setState(() {
       setState(() {
-        board = GobanController(boardSize: resp.width);
+        board = BoardController(boardSize: resp.width);
       });
     });
 
@@ -124,7 +124,7 @@ class _ReplayBoardState extends State<ReplayBoard> {
     return SizedBox(
         width: 300,
         height: 300,
-        child: BoardWidget(
+        child: GobanWidget(
           controller: board,
         )
     );
